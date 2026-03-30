@@ -48,7 +48,7 @@ Apply weave CNI (Container Network Interface) as shown below:
 ```
 kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 ```
-(reference link1:- https://www.weave.works/docs/net/latest/kubernetes/kube-addon/)
+[https://www.weave.works/docs/net/latest/kubernetes/kube-addon/](https://github.com/rajch/weave#using-weave-on-kubernetes)
 
 View nodes to see that they are ready.
 ```
