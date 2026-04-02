@@ -1,5 +1,5 @@
 
-# Kubernetes Volumes – Theory Guide
+# Kubernetes Volumes 
 
 ## 📌 Introduction
 
