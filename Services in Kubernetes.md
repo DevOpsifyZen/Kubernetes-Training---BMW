@@ -109,7 +109,7 @@ kubectl get nodes -o wide | awk '{print $7}'
 ```
 SSH to one of the machines and rerun the command in the previous task
 ```
-ssh -t ubuntu@<Node_IP> curl <Cluster_IP>:<Service_Port>
+ssh -t userName@<Node_IP> curl <Service_IP>:<Service_Port>
 ```
 
 ### Task 3: Setup NodePort Service
@@ -154,7 +154,7 @@ Get External IPs of the machines in the cluster. SSH to one of the machines and 
 kubectl get nodes -o wide | awk '{print $7}'
 ```
 ```
-ssh -t ubuntu@<Node_IP> curl <Cluster_IP>:<Service_Port>
+ssh -t userName@<Node_IP> curl <Service_IP>:<Service_Port>
 ```
 
 ### Task 4: Setup LoadBalancer Service
