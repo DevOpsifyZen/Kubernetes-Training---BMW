@@ -1,3 +1,113 @@
+
+# Kubernetes Volumes – Theory Guide
+
+## 📌 Introduction
+
+In Kubernetes, containers are **ephemeral by nature**, meaning any data stored inside a container is lost when the container stops or is deleted.
+
+To solve this limitation, Kubernetes provides **Volumes**, which enable:
+- Data persistence
+- Data sharing between containers
+- Decoupling of storage from container lifecycle
+
+---
+
+## What is a Kubernetes Volume?
+
+A **Volume** is a directory that is:
+- Accessible to containers in a Pod
+- Backed by different storage types
+- Managed by Kubernetes
+
+## Types of Volumes (Focus)
+
+This guide focuses on two commonly used volume types:
+
+1. **hostPath Volume**
+2. **emptyDir Volume**
+
+---
+
+# hostPath Volume
+
+A **hostPath volume** mounts a file or directory from the **host node’s filesystem** into a Pod.
+
+## How It Works
+
+- Kubernetes directly maps a path from the node (e.g., `/data`)
+- This path becomes accessible inside the container
+- Any changes made inside the container reflect on the node
+
+## Key Characteristics
+
+- **Node-dependent**: Works only on the specific node where the Pod runs
+- **Persistent**: Data remains even after Pod deletion
+- **Direct access**: Uses the host machine’s storage
+- **No abstraction**: Bypasses Kubernetes storage layers
+
+## Advantages
+
+- Simple and easy to use
+- Useful for testing and development
+- Enables access to node-level resources
+
+## Limitations
+
+- Not portable across nodes
+- Security risks (access to host filesystem)
+- Not suitable for production environments
+- Tight coupling with node infrastructure
+
+---
+
+# emptyDir Volume
+
+An **emptyDir volume** is a temporary directory created when a Pod is assigned to a node.
+
+## How It Works
+
+- Created automatically when Pod starts
+- Exists as long as the Pod is running
+- Deleted permanently when Pod is removed
+
+## Key Characteristics
+
+- **Pod-level scope**
+- **Ephemeral storage**
+- **Shared across containers in the same Pod**
+- Can be stored on:
+  - Node disk
+  - Memory (if configured)
+
+## Advantages
+
+- Simple temporary storage
+- Ideal for inter-container communication
+- No dependency on external storage
+  
+## Limitations
+
+- Data is lost when Pod stops or restarts
+- Not suitable for persistent storage
+- Limited to a single Pod
+
+
+---
+
+# ⚖️ hostPath vs emptyDir
+
+| Feature        | hostPath                     | emptyDir                   |
+|---------------|-----------------------------|----------------------------|
+| Scope         | Node                        | Pod                        |
+| Persistence   | Persistent                  | Temporary                  |
+| Lifecycle     | Independent of Pod          | Tied to Pod lifecycle      |
+| Portability   | Low                         | High (within Pod)          |
+| Security      | Risky                       | Safer                      |
+| Use Case      | Node-level access           | Temporary shared storage   |
+
+
+---
+
 ## Task 1: Creating POD with hostPath
 Create a file named mydep-hp.yaml using the content given below
 ```
