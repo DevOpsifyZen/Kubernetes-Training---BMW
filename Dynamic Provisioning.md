@@ -1,3 +1,149 @@
+# Kubernetes Storage: Dynamic Provisioning
+
+## What is Dynamic Provisioning?
+
+**Dynamic Provisioning** is a method where Kubernetes **automatically creates storage (Persistent Volumes)** when a user requests it using a PVC.
+
+👉 No need for manual PV creation.
+
+---
+
+## Key Idea
+
+- User creates a **PVC**
+- Kubernetes uses **StorageClass**
+- Storage is **automatically provisioned**
+- A **PV is created and bound to PVC**
+
+👉 **Flow:**
+
+> **Pod → PVC → StorageClass → Auto-created PV → Cloud Storage (EBS)**
+
+
+---
+
+## StorageClass – Core Component
+
+A **StorageClass** defines *how storage should be created dynamically*.
+
+### Responsibilities:
+- Defines the **provisioner** (e.g., AWS EBS)
+- Specifies **storage type** (gp2, gp3, etc.)
+- Controls:
+  - Disk type
+  - File system
+  - Reclaim policy
+  - Binding mode
+
+
+**StorageClass is like a template or blueprint for creating storage**
+
+---
+
+## CSI Driver (Container Storage Interface)
+
+The **CSI Driver** allows Kubernetes to communicate with external storage systems like AWS EBS.
+
+### Role:
+- Provision volumes
+- Attach/detach volumes
+- Manage lifecycle
+
+👉 Example:
+- AWS → EBS CSI Driver
+- Azure → Disk CSI Driver
+
+👉 Without CSI:
+❌ Kubernetes cannot dynamically create storage
+
+---
+
+## 🔹 Dynamic Provisioning Workflow
+
+1. Admin installs **CSI Driver**
+2. Admin creates **StorageClass**
+3. User creates **PVC**
+4. Kubernetes:
+   - Calls CSI driver
+   - Creates a **new PV automatically**
+5. PVC is **bound to PV**
+6. Pod uses PVC
+
+---
+
+## 🔹 Important Parameters in Dynamic Provisioning
+
+### 1. Provisioner
+- Identifies storage backend
+- Example: `ebs.csi.aws.com`
+
+---
+
+### 2. Volume Binding Mode
+
+- **Immediate**
+  - Volume created instantly after PVC
+
+- **WaitForFirstConsumer**
+  - Volume created only when Pod is scheduled
+  - Ensures correct node placement
+
+---
+
+### 3. Reclaim Policy
+
+- **Delete**
+  - Volume deleted when PVC is deleted
+
+- **Retain**
+  - Volume remains even after PVC deletion
+
+---
+
+### 4. Storage Type
+
+- Example in AWS:
+  - `gp2`, `gp3`, `io1`
+
+---
+
+## Access Modes
+
+- **ReadWriteOnce (RWO)**  
+  → Mounted by one node (common in EBS)
+
+- **ReadWriteMany (RWX)**  
+  → Multiple nodes (not supported by EBS)
+
+---
+
+## Why Dynamic Provisioning?
+
+### Problems with Static Provisioning:
+- Manual PV creation
+- Not scalable
+- Time-consuming
+
+### Benefits of Dynamic Provisioning:
+- Fully automated
+- Scalable
+- Faster deployment
+- Less admin effort
+- Ideal for cloud environments
+
+---
+
+## Dynamic vs Static Provisioning
+
+| Feature | Static Provisioning | Dynamic Provisioning |
+|--------|-------------------|---------------------|
+| PV Creation | Manual | Automatic |
+| Effort | High | Low |
+| Flexibility | Low | High |
+| Use Case | On-prem | Cloud (AWS, Azure, GCP) |
+
+---
+
 ## Dynamic Provisioning
 
 ## Prerequisites
