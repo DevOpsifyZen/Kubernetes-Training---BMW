@@ -1,9 +1,124 @@
-## 📘 Lab: Configuring Pod Using NFS-Based PV and PVC
-🎯 Objective
+## Lab: Configuring Pod Using NFS-Based PV and PVC
 
-To configure a Pod using NFS-based PersistentVolume (PV) and PersistentVolumeClaim (PVC) for efficient storage management in Kubernetes.
+Configure a Pod using **NFS-based PersistentVolume (PV)** and **PersistentVolumeClaim (PVC)** for efficient storage management in Kubernetes.
 
-### 🔹 Task 1: Configure the NFS Kernel Server
+---
+
+## Architecture Overview
+
+- One node acts as **NFS Server**
+- All nodes act as **NFS Clients**
+- Kubernetes uses:
+  - PV → NFS storage
+  - PVC → request storage
+  - Pod → consumes PVC
+
+---
+
+## NFS-Based Persistent Storage in Kubernetes
+
+
+## What is NFS?
+
+**NFS (Network File System)** is a distributed file system that allows multiple systems to access shared storage over a network.
+
+👉 It enables **multiple Pods on different nodes to share the same data**
+
+---
+
+## 🔹 Why Use NFS in Kubernetes?
+
+- Supports **ReadWriteMany (RWX)**
+- Shared storage across multiple Pods
+- Simple to set up (compared to cloud storage)
+- Useful for:
+  - Web content sharing
+  - Logs
+  - Shared configuration
+
+---
+
+## 🔹 How NFS Works in Kubernetes
+
+### Flow:
+> **Pod → PVC → PV → NFS Server → Shared Directory**
+
+
+### 1. NFS Server
+- Stores actual data
+- Exposes directory over network
+- Example: `/mydbdata`
+
+### 2. PersistentVolume (PV)
+- Points to NFS server
+- Defines:
+  - Server IP
+  - Path
+  - Access mode (RWX)
+
+### 3. PersistentVolumeClaim (PVC)
+- Requests storage
+- Gets bound to PV
+
+### 4. Pod / Deployment
+- Mounts PVC as a volume
+- Reads/writes data to NFS
+
+
+## Access Mode Importance
+
+### ReadWriteMany (RWX)
+- Multiple Pods can:
+  - Read
+  - Write
+- Across multiple nodes
+
+👉 This is why NFS is commonly used
+
+---
+
+## Advantages of NFS
+
+- Shared storage across nodes
+- Easy to configure
+- Cost-effective (no cloud dependency)
+- Supports scaling applications
+
+
+## Limitations
+
+- Performance depends on network
+- Single point of failure (if one server)
+- Not ideal for high-performance workloads
+- Security needs proper configuration
+
+---
+
+## NFS vs hostPath
+
+| Feature | NFS | hostPath |
+|--------|-----|---------|
+| Scope | Network-wide | Single node |
+| Sharing | Multi-node | Not shareable |
+| Use case | Production | Testing |
+
+---
+
+## When to Use NFS?
+
+- Multi-pod shared storage
+- Stateless apps needing shared files
+- On-prem Kubernetes clusters
+
+---
+
+👉 **One-line explanation:**  
+*NFS allows multiple Kubernetes Pods to share the same storage across nodes*
+
+---
+
+
+### Task 1: Configure the NFS Server
 
 Perform these steps on **worker-node-1** (which will act as the NFS server):
 
@@ -13,7 +128,7 @@ sudo mkdir /mydbdata
 ```
 Install the NFS kernel server
 ```
-sudo apt install -y nfs-kernel-server
+sudo apt update && sudo apt install -y nfs-kernel-server
 ```
 
 🔹Set the Permissions:
@@ -56,13 +171,13 @@ ip a
 
 👉 Save this internal IP — it will be used in the PV configuration.
 
-### 🔹 Task 2: Configure the NFS Common on Client Machines
+### Task 2: Configure the NFS Common on Client Machines (All Worker Nodes)
 
 Perform the following steps on all worker nodes:
 
 Install NFS common
 ```
-sudo apt install -y nfs-common
+sudo apt update && sudo apt install -y nfs-common
 ```
 Refresh NFS common service
 ```
@@ -80,7 +195,7 @@ sudo systemctl restart nfs-common
 sudo systemctl status nfs-common
 ```
 
-### 🔹 Task 3: Create the PersistentVolume (PV)
+### Task 3: Create the PersistentVolume (PV)
 Create the PV YAML file
 ```bash
 vi nfs-pv.yaml
@@ -95,7 +210,7 @@ metadata:
     app: nfs-pv
 spec:
   capacity:
-    storage: 10Gi
+    storage: 5Gi
   accessModes:
     - ReadWriteMany
   nfs:
@@ -113,7 +228,7 @@ kubectl apply -f nfs-pv.yaml
 kubectl get pv
 ```
 
-### 🔹 Task 4: Create the PersistentVolumeClaim (PVC)
+### Task 4: Create the PersistentVolumeClaim (PVC)
 Create the PVC YAML file
 ```
 vi nfs-pvc.yaml
@@ -144,7 +259,7 @@ kubectl get pv
 kubectl get pvc
 ```
 
-### 🔹 Task 5: Create a Deployment using PVC
+### Task 5: Create a Deployment using PVC
 Create a deployment YAML
 ```
 vi nfs-deployment.yaml
@@ -191,7 +306,7 @@ kubectl get pods
 kubectl describe pod <pod-name>
 ```
 
-🔎 Verification
+**🔎 Verification**
 
 Enter pod:
 ```
@@ -200,16 +315,23 @@ kubectl exec -it <pod-name> -- bash
 
 Inside pod:
 
+Create file
+
 ```
 echo "This is NFS Server LAB" > /usr/share/nginx/html/index.html
 ```
+```
+exit
+```
+
+Exit and verify on **NFS server**
 
 On NFS server, check storage directory:
 ```
 ls /mydbdata
 ```
 
-✅ You should see WebApp data files stored inside /mydbdata on the NFS server.
+✅ You should see *WebApp data files* stored inside */mydbdata* on the NFS server.
 
 ### 🧹 Task 6:  Cleanup 
 ```
