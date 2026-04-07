@@ -24,43 +24,45 @@ Best suited for stateful applications like databases and distributed systems.
 ---
 
 ### Task 1: Create Stateful Set
-Create the yaml definition for an nginx Stateful Set 
+Create the Stateful Set yaml file
 ```
-vi nginx-sts.yaml
+vi webapp-sts.yaml
 ```
+Add the given content, by pressing `INSERT`
+
 ```yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-svc
+  name: webapp-svc
   labels:
-    app: nginx-svc
+    app: webapp-svc
 spec:
   ports:
   - port: 80
     name: web
   clusterIP: None
   selector:
-    app: nginx-sts
+    app: webapp-sts
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: nginx-sts
+  name: webapp-sts
 spec:
-  serviceName: nginx-svc
+  serviceName: webapp-svc
   replicas: 2
   selector:
     matchLabels:
-      app: nginx-sts
+      app: webapp-sts
   template:
     metadata:
       labels:
-        app: nginx-sts
+        app: webapp-sts
     spec:
       containers:
       - name: nginx
-        image: k8s.gcr.io/nginx-slim:0.8
+        image: nginx:1.24.0
         ports:
         - containerPort: 80
           name: web
@@ -76,74 +78,87 @@ spec:
         requests:
           storage: 1Gi
 ```
+save the file using `ESCAPE + :wq!`
+
 Create a Stateful Set and  headless service by applying the yaml
 ```
-kubectl apply -f nginx-sts.yaml
+kubectl apply -f webapp-sts.yaml
 ```
-Validate the headless service creation
+
+Validate the headless service 
 ```
-kubectl get service nginx-svc
+kubectl get service webapp-svc
 ```
+
 Validate the stateful set creation
 ```
-kubectl get statefulset nginx-sts
+kubectl get statefulset webapp-sts
 ```
+
 Watch the pods getting created in an ordinal index fashion
 ```
-kubectl get pods -w -l app=nginx-sts
+kubectl get pods -w -l app=webapp-sts
 ```
-Create a busybox pod to test the ping to one of the Ngninx pods by using DNS name of the pod
+
+Create a busybox pod to test the one of the pods by using DNS name 
 ```
-kubectl run -i --tty --image busybox:1.28 dns-test --restart=Never --rm
-```
-```
-nslookup nginx-sts-0.nginx-svc
+kubectl run -it --image busybox:1.28 test-pod --restart=Never --rm
 ```
 ```
-nslookup nginx-sts-1.nginx-svc
+nslookup webapp-sts-0.webapp-svc
+```
+```
+nslookup webapp-sts-1.webapp-svc
 ```
 ```
 exit
 ```
+
 Delete the pods for a stateful set
 ```
-kubectl delete pod -l app=nginx-sts
+kubectl delete pod -l app=webapp-sts
 ```
+
 In another window notice the new pods getting created in a proper order
 ```
-kubectl get pod -w -l app=nginx-sts
+kubectl get pod -w -l app=webapp-sts
 ```
 
 ### Task 2: Scaling a Stateful Set
 Scale the Stateful Set to 5 replicas using below.
 ```
-kubectl scale sts nginx-sts --replicas=5
+kubectl scale sts webapp-sts --replicas=5
 ```
+
 Verify the pods getting created in ordinal way
 ```
-kubectl get pods -w -l app=nginx-sts
+kubectl get pods -w -l app=webapp-sts
 ```
+
 Verify the PV Claim getting created in ordinal fashion
 ```
-kubectl get pvc -l app=nginx-sts
+kubectl get pvc -l app=webapp-sts
 ```
+
 Edit the stateful Set yam and reduce replicas to 3 
 ```
-kubectl edit sts nginx-sts
+kubectl edit sts webapp-sts
 ```
+
 Notice that the controller deletes the pods one at a time. It waits for one to completely shut down before going to next
 ```
-kubectl get pods -w -l app=nginx-sts
+kubectl get pods -w -l app=webapp-sts
 ```
+
 Verify statefulSet’s PersistentVolumeClaims and verify that are not deleted on scaling down. 
 ```
-kubectl get pvc -l app=nginx-sts
+kubectl get pvc -l app=webapp-sts
 ```
 
 ### Task 3: Cleanup the resources using below command 
 Delete a Stateful Set
 ```
-kubectl delete -f nginx-sts.yaml
+kubectl delete -f webapp-sts.yaml
 ```
 List all the PV and PVC’s that has been allocated to Statefulset pods and delete them as below.
 ```
