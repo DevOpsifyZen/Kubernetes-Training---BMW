@@ -8,7 +8,7 @@ Keep in mind that **ResourceQuotas** are a way to define constraints, and they d
 
 Creating a Namespace
 ```
-kubectl create namespace ns1
+kubectl create namespace rq-ns
 ```
 Verify the namespace
 ```
@@ -16,11 +16,11 @@ kubectl get ns
 ```
 Describe the namespace
 ```
-kubectl describe ns ns1
+kubectl describe ns rq-ns
 ```
 Check for existing ResourceQuota (none expected)
 ```
-kubectl describe quota -n ns1
+kubectl describe quota -n rq-ns
 ```
 
 
@@ -37,7 +37,7 @@ apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: rs-quota
-  namespace: ns1
+  namespace: rq-ns
 spec:
   hard:
     requests.cpu: "1"
@@ -56,28 +56,28 @@ kubectl apply -f rq.yaml
 ```
 Verify quota is applied
 ```
-kubectl describe ns ns1
+kubectl describe ns rq-ns
 ```
 ```
-kubectl describe quota -n ns1
+kubectl describe quota -n rq-ns
 ```
 ### Task 3: Verify Resource Quota Functionality
 
 Try creating a Pod without resource requests (will fail)
 ```
-kubectl -n ns1 run pod1 --image nginx --port 80
+kubectl -n rq-ns run pod1 --image nginx --port 80
 ```
 Create Pod with valid resource requests
 ```
-vi ng-pod-1.yaml
+vi rq-pod-1.yaml
 ```
 Add the given content, by pressing INSERT
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: ng-pod-1
-  namespace: ns1
+  name: rq-pod-1
+  namespace: rq-ns
 spec:
   containers:
   - name: quota-ctr
@@ -96,29 +96,29 @@ save the file using ESCAPE + :wq!
 
 Apply the pod:
 ```	  
-kubectl apply -f ng-pod-1.yaml
+kubectl apply -f rq-pod-1.yaml
 ```
 
 Check quota usage
 ```
-kubectl describe quota -n ns1
+kubectl describe quota -n rq-ns
 ```
 
 ```
-kubectl get resourcequota -n ns1 -o yaml
+kubectl get resourcequota -n rq-ns -o yaml
 ```
 
 Deploy another Pod, such that the total resource exceeds the resoucre quota limit
 ```
-vi ng-pod-2.yaml
+vi rq-pod-2.yaml
 ```
 Add the given content, by pressing INSERT
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: ng-pod-2
-  namespace: ns1
+  name: rq-pod-2
+  namespace: rq-ns
 spec:
   containers:
   - name: quota-ctr
@@ -137,7 +137,7 @@ save the file using ESCAPE + :wq!
 
 Apply the Pod:
 ```
-kubectl apply -f ng-pod-2.yaml
+kubectl apply -f rq-pod-2.yaml
 ```
 ❌ Pod creation will FAIL
 
