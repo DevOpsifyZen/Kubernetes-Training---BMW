@@ -20,7 +20,7 @@ A *Secret* stores sensitive information(Secrets are stored in *base64-encoded* f
 
 ### Task 1: Directly inject variables - Traditional Method
 ```
-vi env.yaml
+vi env1.yaml
 ```
 Add the given content, by pressing `INSERT`
 ```yaml
@@ -29,7 +29,7 @@ kind: Pod
 metadata:
   labels:
     app: ws
-  name: env-pod
+  name: env-pod-1
 spec:
   containers:
   - image: nginx
@@ -46,7 +46,7 @@ save the file using `ESCAPE + :wq!`
 
 Apply the YAML file
 ```
-kubectl apply -f env.yaml
+kubectl apply -f env1.yaml
 ```
 ```
 kubectl describe pod env-pod
@@ -81,7 +81,7 @@ kubectl describe cm cm-1
 ```
 Inject the ConfigMap into the Pod Yaml File
 ```
-vi env.yaml
+vi env2.yaml
 ```
 Add the given content, by pressing `INSERT`
 ```yaml
@@ -90,7 +90,7 @@ kind: Pod
 metadata:
   labels:
     app: web
-  name: web-pod
+  name: env-pod-2
 spec:
   containers:
   - image: httpd
@@ -107,7 +107,7 @@ save the file using `ESCAPE + :wq!`
 
 Apply the YAML file
 ```
-kubectl apply -f env.yaml
+kubectl apply -f env2.yaml
 ```
 
 ```
@@ -150,7 +150,7 @@ kubectl describe cm file-cm
 ```
 Inject as volume mount
 ```
-vi env.yaml
+vi env3.yaml
 ```
 Add the given content, by pressing `INSERT`
 ```yaml
@@ -159,7 +159,7 @@ kind: Pod
 metadata:
   labels:
     app: web
-  name: web-pod
+  name: env-pod-3
 spec:
   volumes:
   - name: cm-volume
@@ -180,7 +180,7 @@ save the file using `ESCAPE + :wq!`
 Apply the YAML file
 
 ```
-kubectl apply -f env.yaml
+kubectl apply -f env3.yaml
 ```
 ```
 kubectl describe pod web-pod
