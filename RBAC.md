@@ -31,11 +31,11 @@ kubectl get deployment -n kubernetes-dashboard -o wide
 ```
 kubectl get svc -n kubernetes-dashboard -o wide
 ```
-To access the service outside the cluster, edit the **service type** from `ClusterIP to LoadBalancer` using the following command:
+To access the service outside the cluster, edit the **service type** from `ClusterIP to LoadBalancer/NodePort` using the following command:
 ```
 kubectl edit svc -n kubernetes-dashboard kubernetes-dashboard
 ```
-To confirm that the service **type** has been changed to **LoadBalancer**
+To confirm that the service **type** has been changed to **LoadBalancer/NodePort**
 ```
 kubectl get svc -n kubernetes-dashboard -o wide
 ```
@@ -46,7 +46,14 @@ Open browser and access:
 ⚠️ Browser Security:
 - Click Advanced
 - Click Accept the Risk and Continue
-  
+
+> **OR**
+
+https://Node-IP:NodePort
+
+> i.e https://100.9.8.7:31087
+
+
 ## Task 2: Create ServiceAccount for Dashboard Access
 
 Create a service account by running the following command, and then input the code in the master node:
