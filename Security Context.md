@@ -1,29 +1,5 @@
-**🔐 Security Context***
+## Security Context
 
-A *security context* in Kubernetes defines security-related settings for a Pod or a Container.
-It tells Kubernetes how processes inside the Pod/Container should run (e.g., as which user, with what permissions, and with what restrictions).
-
-**📌 Key things you can control with Security Context**
-
-**User & Group IDs**
-
-* *runAsUser:* Which user ID (UID) processes should run as.
-* *runAsGroup:* Which group ID (GID) processes should run as.
-* *fsGroup:* Group ID applied to files in mounted volumes.
-
-**Privilege settings**
-
-* *allowPrivilegeEscalation:* Prevents a process from gaining more privileges than its parent process.
-
-* *privileged:* Allows running the container in privileged mode (like root access to the host).
-
-**Capabilities**
-
-* Add or drop Linux capabilities (fine-grained root privileges).
-* Example: *NET_ADMIN* , *SYS_ADMIN* etc..
-
-
----------------------------------------------------------------
 ### Task 1: Set the security context for a Pod
 
 To specify security settings for a Pod, include the securityContext field in the Pod specification. 
@@ -33,8 +9,6 @@ The security settings that you specify for a Pod apply to all Containers in the 
 ```
 vi security-context1.yaml
 ```
-Add the given content, by pressing `INSERT`
-
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -57,9 +31,7 @@ spec:
       mountPath: /data/demo
    
 ```
-save the file using `ESCAPE + :wq!`
-
-Apply the yaml
+Create the Pod:
 ```
 kubectl apply -f security-context1.yaml
 ```
@@ -107,99 +79,149 @@ From the output, you can see that gid is 3000 which is same as the runAsGroup fi
 exit
 ```
 
+### Task 2: Set the security context for a container
 
-## TAsk 2 : Pod & Container Level Security Context
-```
-vi security-context-new.yaml
-```
-Add the given content, by pressing `INSERT`
+To specify security settings for a Container, include the securityContext field in the Container manifest. 
 
+Security settings that you specify for a Container apply only to the individual Container, and they override settings made at the Pod level when there is overlap. Container settings do not affect the Pod's Volumes.
+
+Below is the configuration file for a Pod that has one Container. Both the Pod and the Container have a securityContext field:
 ```
+vi security-context-2.yaml
+```
+```yaml
+
 apiVersion: v1
 kind: Pod
 metadata:
-  name: security-context-new
+  name: security-context-pod2
 spec:
   securityContext:
-    fsGroup: 2000     # common group of files
-  volumes:
-  - name: sec-ctx-vol
-    emptyDir: {}
+    runAsUser: 1000
   containers:
-  - name: ctr-1
-    image: busybox:1.28
-    command: [ "sh", "-c", "sleep 1h" ]
-    volumeMounts:
-    - name: sec-ctx-vol
-      mountPath: /data/demo
+  - name: sec-ctx-pod2
+    image: alpine:3
     securityContext:
-      runAsUser: 1010   #UID
-      runAsGroup: 3010  #GID
-  - name: ctr-2
-    image: busybox:1.28
-    command: [ "sh", "-c", "sleep 1h" ]
-    volumeMounts:
-    - name: sec-ctx-vol
-      mountPath: /docs/demo
-    securityContext:
-      runAsUser: 1020   #UID
-      runAsGroup: 3020  #GID
+      runAsUser: 2000
+      allowPrivilegeEscalation: false
 ```
-save the file using `ESCAPE + :wq!`
+Create the Pod:
+```
+kubectl apply -f security-context-2.yaml
+```
+Verify that the Pod's Container is running:
+```
+kubectl get pod security-context-pod2
+```
+Get a shell into the running Container:
+```
+kubectl exec -it security-context-pod2 -- sh
+```
+In your shell, list the running processes:
+```
+ps aux
+```
+The output shows that the processes are running as user 2000. This is the value of runAsUser specified for the Container. It overrides the value 1000 that is specified for the Pod.
 
-Apply the yaml
- 
+### Task 3: Set capabilities for a Container
+With Linux capabilities, you can grant certain privileges to a process without granting all the privileges of the root user. To add or remove Linux capabilities for a Container, include the capabilities field in the securityContext section of the Container manifest.
+
+Lets check, what happens when you don't include a capabilities field.
 ```
-kubectl apply -f security-context-new.yaml
+vi security-context-3.yaml
 ```
-Verify that the Pod's Containers are running:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-pod3
+spec:
+  containers:
+  - name: sec-ctx-3
+    image: alpine:3
 ```
-kubectl get po
+Create the Pod:
 ```
-Get a shell into the ctr-1 Container:
+kubectl apply -f security-context-3.yaml
 ```
-kubectl exec -it security-context-new -c ctr-1 -- sh
+Verify that the Pod's Container is running:
 ```
+kubectl get pod security-context-pod3
 ```
-id
+Get a shell into the running Container:
 ```
+kubectl exec -it security-context-pod3 -- sh
 ```
-cd /data/demo/
+In your shell, list the running processes:
 ```
+ps aux
 ```
-echo hello > file1.txt
+In your shell, view the status for process 1:
 ```
+cd /proc/1 && cat status
 ```
-ls -l
+The output shows the capabilities bitmap for the process. Make a note of the capabilities bitmap. 
+
+Inside the pod, you can try to manipulate network-related settings, which require NET_ADMIN capability.
 ```
+ip link set dev eth0 down
+```
+If you're able to execute this command without any errors, it indicates that the NET_ADMIN capability is working, allowing you to manipulate network interfaces.
+
+You can also try to manipulate system time, which requires SYS_TIME capability.
+```
+date -s "2024-02-07 12:00:00"
+```
+If you're able to execute this command without any errors, it indicates that the SYS_TIME capability is working, allowing you to manipulate system time.
 ```
 exit
 ```
-Get a shell into the ctr-2 Container:
+Now, run a Container that is the same as the preceding container, except that it has additional capabilities set.
+
 ```
-kubectl exec -it security-context-new -c ctr-2 -- sh
+vi security-context-4.yaml
+```
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-pod4
+spec:
+  containers:
+  - name: sec-ctx-4
+    image: alpine:3
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN", "SYS_TIME"]
 ```
 ```
-id
+kubectl apply -f security-context-4.yaml
 ```
 ```
-cd /docs/demo/
+kubectl exec -it security-context-pod4 -- sh
 ```
+In your shell, view the capabilities for process 1:
 ```
-echo hello > file2.txt
+cd /proc/1 && cat status
 ```
+Compare the capabilities of the two Containers:
+
+In the capability bitmap of the first container, bits 12 and 25 are clear. In the second container, bits 12 and 25 are set. Bit 12 is CAP_NET_ADMIN, and bit 25 is CAP_SYS_TIME. 
+
+Note: Linux capability constants have the form CAP_XXX. But when you list capabilities in your container manifest, you must omit the CAP_ portion of the constant. For example, to add CAP_SYS_TIME, include SYS_TIME in your list of capabilities.
+
+Inside the pod, you can try to manipulate network-related settings, which require NET_ADMIN capability.
 ```
-ls -l
+ip link set dev eth0 down
 ```
+If you're able to execute this command without any errors, it indicates that the NET_ADMIN capability is working, allowing you to manipulate network interfaces.
+
+You can also try to manipulate system time, which requires SYS_TIME capability.
+```
+date -s "2024-02-07 12:00:00"
+```
+If you're able to execute this command without any errors, it indicates that the SYS_TIME capability is working, allowing you to manipulate system time.
 ```
 exit
 ```
-### Task 3: Cleanup the resources 
-```
-kubectl delete -f security-context1.yaml
-```
-```
-kubectl delete -f security-context-new.yaml
-```
-
 
