@@ -293,6 +293,7 @@ spec:
   containers:
   - name: sec-ctx-3
     image: alpine:3
+    command: ["sh", "-c", "sleep 7000"]
 ```
 Create the Pod:
 ```
@@ -344,6 +345,7 @@ spec:
   containers:
   - name: sec-ctx-4
     image: alpine:3
+    command: ["sh", "-c", "sleep 7000"]
     securityContext:
       capabilities:
         add: ["NET_ADMIN", "SYS_TIME"]
