@@ -1,7 +1,16 @@
-**Observability** = understanding system behavior using metrics, logs, traces.
+# Observability, Prometheus & Grafana (Kubernetes)
 
-**Prometheus**
-Prometheus is a time-series metrics database and monitoring system.
+## What is Observability?
+
+**Observability** = understanding system behavior using metrics, logs, traces.
+- 📈 **Metrics** → Numerical data (CPU, Memory, Requests)
+- 📜 **Logs** → Event records (errors, info, debug)
+- 🔍 **Traces** → Request flow across services
+
+## Prometheus
+
+Prometheus is a ***time-series metrics database and monitoring system.***
+
 * ***Collects Metrics →*** scrapes data from apps, services, nodes (using exporters like node_exporter).
 * ***Stores Metrics →*** in a time-series database (optimized for monitoring).
 * ***Querying →*** uses PromQL to analyze metrics.
@@ -9,7 +18,8 @@ Prometheus is a time-series metrics database and monitoring system.
 
 👉 Example: Prometheus scrapes ***/metrics** endpoint of an app and records:
 
-**Grafana**
+## Grafana
+
 Grafana is a visualization and analytics tool.
 * ***Connects to Prometheus*** (and other data sources like Loki, Tempo, Elasticsearch).
 * **Dashboards →*** turns raw metrics into graphs, heatmaps, and panels.
@@ -17,8 +27,11 @@ Grafana is a visualization and analytics tool.
 * ***Correlation →*** lets you combine metrics, logs, and traces in a single view.
 
 ***👉 Together:** ***Prometheus = collect & store, Grafana = visualize & analyze*** → complete observability.
+
+
 --------------------------------------------------------------------------------------------------------------------
-## Deploy Prometheus & Grafana on Kubernetes with Helm
+
+## Task : Deploy Prometheus & Grafana on Kubernetes with Helm
 
 Create the Namespace
 ```
@@ -48,15 +61,15 @@ Expose Prometheus as *NodePort* (creates a new Service):
 ```
 kubectl expose service prometheus-server --namespace monitoring --type=NodePort --target-port=9090 --name=prometheus-server-0
 ```
-`Alternative:` *You can also expose with **--type=LoadBalancer** if your Kubernetes cluster supports external LoadBalancers (e.g., AKS, EKS, GKE).*
+> `Alternative:` *You can also expose with **--type=LoadBalancer** if your Kubernetes cluster supports external LoadBalancers (e.g., AKS, EKS, GKE).*
 
 Check Services and note the NodePort *or* external IP:
 ```
 kubectl get svc -n monitoring
 ```
-Access Prometheus in your browser using the *node’s IP* & *NodePort* or the *LoadBalancer external IP*. Example:
+Access Prometheus in your browser using the *node’s IP* & *NodePort* or the *LoadBalancer external IP*. 
 
-`http://192.168.105.2:32535`
+> Example:`http://192.168.105.2:32535`
 
 #### Install Grafana
 Add the repo and install Grafana:
@@ -81,11 +94,11 @@ Expose Grafana as *NodePort* (creates a new Service):
 ```
 kubectl expose service grafana --namespace monitoring --type=NodePort --target-port=3000 --name=grafana-0
 ```
-`Alternative:` *You can also expose Grafana with **--type=LoadBalancer** for a public/external endpoint.*
+> `Alternative:` *You can also expose Grafana with **--type=LoadBalancer** for a public/external endpoint.*
 
 Check Services and note the NodePort or external IP:
 ```
 kubectl get svc -n monitoring
 ```
-Access Grafana in your browser. Example:
-`http://192.168.105.2:31173` 
+Access Grafana in your browser. 
+> Example: `http://192.168.105.2:31173` 
