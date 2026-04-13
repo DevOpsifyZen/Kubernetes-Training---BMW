@@ -147,4 +147,3 @@ az group delete --name aks-lab-RG --yes --no-wait
 
 
 
-
