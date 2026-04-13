@@ -143,8 +143,13 @@ You should see list of nodes are in Ready state.
 
 ## Task 8 – (Optional) Clean up resources
 
+Delete AKS Cluster
 ```bash
-az group delete --name aks-lab-RG --yes --no-wait
+az aks delete --name <cluster-name> --resource-group <resource-group-name> --yes --no-wait
+```
+Delete Entire Resource Group
+```bash
+az group delete --name <resource-group-name> --yes --no-wait
 ```
 
 
